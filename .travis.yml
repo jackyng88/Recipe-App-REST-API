@@ -1,0 +1,27 @@
+# we need to tell travis-ci what language to expect our project to be in.
+language: python
+python:
+  - "3.6"
+
+# tell travis what services we need to use. All the subservices are contained
+# in the docker configuration.
+services:
+  - docker
+
+# before script that runs before any of the automation commands.
+before_script: pip install docker-compose
+
+script:
+  # Runs docker for our tests. flake8 is the linting tool.
+  - docker-compose run app sh -c "python manage.py test && flake8"
+
+
+
+# steps that occur:
+# 1. Every time we push a change to GitHub, Travis-CI is going to spin up
+#    a Python server 3.6
+# 2. Makes the Docker service available.
+# 3. Use pip to install docker-compose
+# 4. Lastly it will run the script.
+# 5. If this script exits with a failure, then it will fail the build and it will
+#    send us a notification.
