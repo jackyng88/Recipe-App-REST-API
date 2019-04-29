@@ -1,0 +1,19 @@
+version: "3"
+
+# define the services.
+# we're going to have a service called app, with a build section
+# context: . means current directory
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8000:8000"     #we're going to map 8000 on our host to 8000 on the image.
+    # volume allows us to get the updates that we make, into our docker image in real time.
+    # whenever you change something in the project, it will be automatically updated in the contianer.
+    volumes:
+      - ./app:/app       # maps app dir to the app dir in the docker image.
+    # this command runs the Django development server on all available IP addresses on port 8000.
+    # mapped to the ports on our local machine. command is a shell command "sh"
+    command: >
+      sh -c "python manage.py runserver on 0.0.0.0:8000"
