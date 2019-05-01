@@ -21,4 +21,5 @@ urlpatterns = [
     # any URL request that starts with api/user, we're going to pass in
     # user.urls via the include() function.
     path('api/user/', include('user.urls')),
+    path('api/recipe/', include('recipe.urls')),
 ]
