@@ -30,6 +30,20 @@ class UserSerializer(serializers.ModelSerializer):
             JSON data as the argument.
         '''
 
+    def update(self, instance, validated_data):
+        # Update a user, setting the password correctly and return it.
+        # The instance is the model instance that is linked to our Model Serailizer
+        # validated_data are the fields above, that made it past validation.
+        password = validated_data.pop('password', None)
+        # super will call the ModelSerializer's default update function
+        user = super().update(instance, validated_data)
+
+        if password:
+            user.set_password(password)
+            user.save()
+
+        return user
+
 
 class AuthTokenSerializer(serializers.Serializer):
     # Serializer for the user authentication objects
