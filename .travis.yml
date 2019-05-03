@@ -20,7 +20,7 @@ script:
 
 # steps that occur:
 # 1. Every time we push a change to GitHub, Travis-CI is going to spin up
-#    a Python server 3.6
+#    a Python 3.6 server
 # 2. Makes the Docker service available.
 # 3. Use pip to install docker-compose
 # 4. Lastly it will run the script.
