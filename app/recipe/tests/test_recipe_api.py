@@ -174,3 +174,45 @@ class PrivateRecipeApiTests(TestCase):
         self.assertEqual(ingredients.count(), 2)
         self.assertIn(ingredient1, ingredients)
         self.assertIn(ingredient2, ingredients)
+
+    def test_partial_update_recipe(self):
+        # Test updating a recipe with 'patch'
+        # 'patch' - is used to update the fields in a payload. It will only
+        # change the fields that are provided. Ommitted ones will not change.
+        recipe = sample_recipe(user=self.user)
+        recipe.tags.add(sample_tag(user=self.user))
+        new_tag = sample_tag(user=self.user, name='Curry')
+
+        payload = {'title': 'Chicken Tikka', 'tags': [new_tag.id]}
+        url = detail_url(recipe.id)
+        self.client.patch(url, payload)
+
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.title, payload['title'])
+        tags = recipe.tags.all()
+        # both tags.count() and len(tags) work
+        self.assertEqual(len(tags), 1)
+        self.assertIn(new_tag, tags)
+
+    def test_full_update_recipe(self):
+        # Test updating a recipe with 'put'
+        # 'put'- will replace the full object that we're updating. If you
+        # exclude any fields in the payload those fields will actually
+        # be removed from the object that you're updating.
+        recipe = sample_recipe(user=self.user)
+        recipe.tags.add(sample_tag(user=self.user))
+        payload = {
+            'title': 'Chicken Schwarma',
+            'time_minutes': 20,
+            'price': 6.00
+        }
+        url = detail_url(recipe.id)
+        self.client.put(url, payload)
+
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.title, payload['title'])
+        self.assertEqual(recipe.time_minutes, payload['time_minutes'])
+        self.assertEqual(recipe.price, payload['price'])
+
+        tags = recipe.tags.all()
+        self.assertEqual(len(tags), 0)
