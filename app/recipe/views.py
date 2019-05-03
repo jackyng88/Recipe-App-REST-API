@@ -53,9 +53,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         # Return appropriate serializer class.
-        # Note: Overriding the get_serializer_class function. In the Django REST
-        # framework documentation, get_serializer_class is the function that is
-        # called to retrieve the serializer_class for a particular class.
+        # Note: Overriding the get_serializer_class function. In the Django
+        # REST framework documentation, get_serializer_class is the
+        # function that is called to retrieve the serializer_class
+        # for a given particular class.
 
         # self.action class variable will contain the action that is being
         # used for our current request.
@@ -65,3 +66,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return serializers.RecipeDetailSerializer
 
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        # Create a new recipe
+        serializer.save(user=self.request.user)
