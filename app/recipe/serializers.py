@@ -39,3 +39,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'ingredients', 'tags', 'time_minutes',
                   'price', 'link')
         read_only_fields = ('id',)
+
+
+class RecipeDetailSerializer(RecipeSerializer):
+    # Serialize a recipe detail, base class is RecipeSerializer
+    # The Django REST framework allows you to nest serializers within
+    # eachother.
+    # 'many' here means that you can have many ingredients/tags in a recipe
+    # i.e. the ManyToManyField. The read_only means you can't create
+    # a recipe by providing these values.
+    ingredients = IngredientSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)

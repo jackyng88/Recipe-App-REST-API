@@ -50,3 +50,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Retrieve the recipes for the authentiated user
         return self.queryset.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        # Return appropriate serializer class.
+        # Note: Overriding the get_serializer_class function. In the Django REST
+        # framework documentation, get_serializer_class is the function that is
+        # called to retrieve the serializer_class for a particular class.
+
+        # self.action class variable will contain the action that is being
+        # used for our current request.
+        # if self.action is 'retrieve' it returns RecipeDetailSerializer
+        # otherwise this returns RecipeSerializer
+        if self.action == 'retrieve':
+            return serializers.RecipeDetailSerializer
+
+        return self.serializer_class
