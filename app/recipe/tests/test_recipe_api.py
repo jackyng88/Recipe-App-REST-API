@@ -1,3 +1,9 @@
+import tempfile
+import os
+
+# PIL is the Pillow library.
+from PIL import Image
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -12,6 +18,11 @@ from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 
 RECIPES_URL = reverse('recipe:recipe-list')
 # /api/recipe/recipes  What the RECIPES_URL might look like
+
+
+def image_upload_url(recipe_id):
+    # Return URL for recipe image upload
+    return reverse('recipe:recipe-upload-image', args=[recipe_id])
 
 
 def detail_url(recipe_id):
@@ -216,3 +227,53 @@ class PrivateRecipeApiTests(TestCase):
 
         tags = recipe.tags.all()
         self.assertEqual(len(tags), 0)
+
+
+class RecipeImageUploadTests(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            'user@test.com',
+            'testpass'
+        )
+        self.client.force_authenticate(self.user)
+        self.recipe = sample_recipe(user=self.user)
+
+    def tearDown(self):
+        # function to tear down and clear test files from our object.
+        self.recipe.image.delete()
+
+    def test_upload_image_to_recipe(self):
+        # Test uploading an image to recipe
+        url = image_upload_url(self.recipe.id)
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as ntf:
+            # creates a temporary file on the system that we can then
+            # write to and then after we exit the context manager (with)
+            # it will automatically remove that file.
+            img = Image.new('RGB', (10, 10))
+            img.save(ntf, format='JPEG')
+            # The way that python reads files. Because we saved the file
+            # the seeking would be at the end of the file and we would
+            # just have a blank. We use seek(0) to set it to the beginning
+            # of the file again.
+            ntf.seek(0)
+            # We need the multipart format because we need to tell Django
+            # that we want to make a multipart form request which means a
+            # a form that consists of data. By default it would be a form
+            # that contains a JSON object.
+            res = self.client.post(url, {'image': ntf}, format='multipart')
+
+        self.recipe.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        # check that image is in the response and that the path is saved
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.recipe.image.path))
+
+    def test_upload_image_bad_request(self):
+        # Test uploading an invalid image
+        url = image_upload_url(self.recipe.id)
+        res = self.client.post(url, {'image': 'notimage'}, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        
