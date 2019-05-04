@@ -1,4 +1,6 @@
 # tests that our helper function for our model can create a new user.
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
@@ -73,3 +75,21 @@ class ModelTests(TestCase):
             price=5.00
         )
         self.assertEqual(str(recipe), recipe.title)
+
+    @patch('uuid.uuid4')
+    def test_recipe_file_name_uuid(self, mock_uuid):
+        # Test that image is saved in the correct location.
+        # We're going to mock the uuid function from the default
+        # uuid library that comes with Python.
+        uuid = 'test-uuid'
+        # any time we call the uuid4 function that is triggered from
+        # within the test, it will change the value and override the
+        # default behavior and just return 'test-uuid' instead.
+        mock_uuid.return_value = uuid
+        file_path = models.recipe_image_file_path(None, 'myimage.jpg')
+
+        # f'' is an fstring or 'literal string interpolation'. Which allows
+        # us to insert our variables inside our string without having to
+        # use the variable dot format by surrounding them with {}.
+        expected_path = f'uploads/recipe/{uuid}.jpg'
+        self.assertEqual(file_path, expected_path)

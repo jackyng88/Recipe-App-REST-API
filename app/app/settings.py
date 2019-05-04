@@ -125,6 +125,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = '/vol/web/media'
+# Django comes with a command called collectstatic that collects all the
+# static files from any dependency we have and combines them in the
+# STATIC_ROOT
+STATIC_ROOT = '/vol/web/static'
 
 # core is the name of our app and User is the name of the model in our app
 # that we want to assign as custom user model.
