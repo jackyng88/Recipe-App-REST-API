@@ -20,7 +20,28 @@ class BaseRecipeAttrViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         # Return objects for the current authenticated user only
-        return self.queryset.filter(user=self.request.user).order_by('-name')
+        '''
+        Note
+        Our assigned_only value will be a 0 or a 1. In the query_params
+        there is no concept of 'type'. If 1 is the param, theres no way
+        to know if it was a string or an int because they don't have quotes
+        around them. So we first convert to int, then to boolean. This is
+        because if we do bool() on a string with 0 in it then that will
+        convert to true and assigned_only evaluates to true even if it
+        was originally a 0.
+        '''
+        assigned_only = bool(
+            # 0 is passed in as a default value for assigned_only if
+            # not provided.
+            int(self.request.query_params.get('assigned_only', 0))
+        )
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(recipe__isnull=False)
+
+        return queryset.filter(
+            user=self.request.user
+        ).order_by('-name').distinct()
 
     def perform_create(self, serializer):
         # Create a new object
